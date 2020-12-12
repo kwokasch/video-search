@@ -67,3 +67,6 @@ pre {
 body {
   @include body-font;
 }
+img {
+  max-width: 100%;
+}
