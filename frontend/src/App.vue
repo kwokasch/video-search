@@ -2,11 +2,12 @@
   <div id="the-app">
     <h1>Video Search</h1>
     <SearchForm v-model:searchTerm="searchTerm" />
-    <ul>
+    <ul v-if="!searchTerm || searchResults.length > 0">
       <li v-for="searchResult in searchResults" :key="searchResult.id">
         <VideoResult :video="searchResult" />
       </li>
     </ul>
+    <p v-else>No videos matched your search.</p>
   </div>
 </template>
 
