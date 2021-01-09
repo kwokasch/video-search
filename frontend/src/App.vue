@@ -1,62 +1,72 @@
 <template>
   <div id="the-app">
     <h1>Video Search</h1>
-    <form class="search-form">
-      <input placeholder="Search for a video">
-      <font-awesome-icon icon="search" />
-    </form>
-    <ul>
-      <li>
-        <div class="video-result">
-          <a href="#"><img src="images/math-rock.png" alt=""></a>
-          <section>
-            <h2>5 Awesome FACGCE Riffs - Covet, TTNG, American Football, Colossal</h2>
-            <p>
-              Hello, Steve here, hope you're doing well. In this video, I show you 5 riffs
-              in FACGCE tuning. A question I get asked quite often is what is the best way
-              to learn how to play in other tunings. I think a great way to start is to
-              learn other songs or parts of songs in different tunings, this way you will
-              get some insight into how to possibly play, techniques you can use, where chords
-              are, nice sounding notes and so on.
-            </p>
-          </section>
-        </div>
-      </li>
-      <li>
-        <div class="video-result">
-          <a href="#"><img src="images/nathan-fielder.png" alt=""></a>
-          <section>
-            <h2>Can the Emmys be Hacked?</h2>
-            <p>
-              Nathan Fielder reveals potential vulnerabilities in the Emmy online voting system
-              with election security expert Carsten Schürmann.
-            </p>
-          </section>
-        </div>
-      </li>
-      <li>
-        <div class="video-result">
-          <a href="#"><img src="images/pwas.png" alt=""></a>
-          <section>
-            <h2>Progressive Web Apps Are The Future</h2>
-            <p>
-              Get the lowdown on Progressive Web Apps – why PWAs are the freshest way to reach more
-              users and create richer user experiences and engagement.
-            </p>
-          </section>
-        </div>
+<!-- Bind value of searchTerm and listen for value from SearchForm component   -->
+    <SearchForm
+      placeholder="Search for a video"
+      icon="search"
+      v-model:searchTerm="searchTerm"
+    />
+<!--  Show all unless searchTerm is entered or filtered results exist  -->
+    <ul v-if="!searchTerm || filterVideos.length > 0">
+    <!--  Map over filterVideos and pass video as prop to VideoResult  -->
+      <li v-for="video in filterVideos" :key="video.id">
+        <VideoResult :video="video"/>
       </li>
     </ul>
   </div>
 </template>
 
 <script>
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import SearchForm from '@/components/SearchForm.vue';
+import VideoResult from '@/components/VideoResult.vue';
+
+function prepareString(string) {
+  return string.replace(/\s/g, '')
+    .split('')
+    .map((letter) => letter.toLowerCase())
+    .join('');
+}
 
 export default {
   name: 'App',
   components: {
-    FontAwesomeIcon,
+    SearchForm,
+    VideoResult,
+  },
+  data() {
+    return {
+      // 1. Will need to populate state with data fetched from API
+      videos: [],
+      // 2. Will need to populate state with searchTerm
+      searchTerm: '',
+    };
+  },
+  computed: {
+  // 1. Will need to remove special characters and convert to lowercase using created function
+  // 2. Will need to filter videos based on searchTerm
+    filterVideos() {
+      return this.videos.filter((video) => {
+        // Strip special characters and convert to lowercase from video title and description
+        const title = prepareString(video.title);
+        const description = prepareString(video.description);
+        // Merge all text
+        const text = title + description;
+        // Strip special characters and convert to lowercase from searchTerm
+        const searchTerm = prepareString(this.searchTerm);
+
+        // Return any videos that contain the searchTerm
+        return text.includes(searchTerm);
+      });
+    },
+  },
+  created() {
+  // 1. Will need to fetch data from API and set state
+    fetch('http://localhost:8091/videos')
+      .then((response) => response.json())
+      .then((response) => {
+        this.videos = response.videos;
+      });
   },
 };
 </script>
